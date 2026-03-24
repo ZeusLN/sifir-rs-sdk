@@ -1,2 +1,23 @@
 [unstable]
 #strip = 'symbols'
+
+# Exclude static bionic (libc.a) symbols from the final .so.
+# libtor-sys builds Tor via autotools which statically links bionic,
+# embedding pthread_create, __libc_shared_globals, etc. These static
+# copies don't work in a JNI context because __libc_shared_globals
+# is never initialized by the dynamic linker, causing SIGSEGV in
+# pthread_create when creating threads.
+# --exclude-libs forces all symbols from libc.a to remain local/hidden,
+# so the dynamic linker resolves them from the system's libc.so instead.
+
+[target.aarch64-linux-android]
+rustflags = ["-C", "link-args=-Wl,--exclude-libs,libc.a"]
+
+[target.armv7-linux-androideabi]
+rustflags = ["-C", "link-args=-Wl,--exclude-libs,libc.a"]
+
+[target.i686-linux-android]
+rustflags = ["-C", "link-args=-Wl,--exclude-libs,libc.a"]
+
+[target.x86_64-linux-android]
+rustflags = ["-C", "link-args=-Wl,--exclude-libs,libc.a"]
